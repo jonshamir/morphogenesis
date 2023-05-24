@@ -1,0 +1,29 @@
+html
+{
+  background: #222;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: currentColor;
+}
+
+canvas {
+  width: 100vw;
+  height: 100vh;
+}
+
+.overlay {
+  width: 100vw;
+  height: 80px;
+  position: absolute;
+  inset: 0;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
