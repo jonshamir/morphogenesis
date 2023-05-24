@@ -9,8 +9,5 @@ const root = createRoot(container);
 root.render(
   <StrictMode>
     <App />
-    <div className="overlay">
-      <h1>Morphogenesis</h1>
-    </div>
   </StrictMode>
 );
