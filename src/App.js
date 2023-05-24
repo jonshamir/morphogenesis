@@ -13,7 +13,7 @@ const PointCloud = () => {
   
 
   useEffect(() => {
-    loader.load('/points1.ply', (geometry) => {
+    loader.load('/data/119-120_1.ply', (geometry) => {
       const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
       const points = new THREE.Points(geometry, material);
       pointsRef.current = points;

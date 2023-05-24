@@ -1,10 +1,11 @@
 import open3d as o3d
 import numpy as np
+import os
 from scipy.spatial.transform import Rotation
 
 
-def TrimPointCloud(input_path, output_path):
-    point_cloud = o3d.io.read_point_cloud(input_path)
+def trim_point_cloud(input_path, output_path, file_name):
+    point_cloud = o3d.io.read_point_cloud(input_path + file_name)
 
     # Center points
     point_cloud.translate([-0.055, 0, 11.22])
@@ -39,10 +40,13 @@ def TrimPointCloud(input_path, output_path):
     filtered_point_cloud.points = o3d.utility.Vector3dVector(filtered_points)
     filtered_point_cloud.colors = o3d.utility.Vector3dVector(filtered_colors)
 
-    o3d.io.write_point_cloud(output_path, filtered_point_cloud)
+    o3d.io.write_point_cloud(output_path + file_name, filtered_point_cloud)
 
 
-input_path = "public/points_raw.ply"
-output_path = "public/points1.ply"
+input_path = "public/data_raw/"
+output_path = "public/data/"
 
-TrimPointCloud(input_path, output_path)
+
+for root, dirs, files in os.walk(input_path):
+    for name in files:
+        trim_point_cloud(input_path, output_path, name)
