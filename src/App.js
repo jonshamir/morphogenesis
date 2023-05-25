@@ -23,7 +23,7 @@ const PointCloud = ({frameIndex, frameCount}) => {
         const p = geometry.attributes.position.array;
         const c = geometry.attributes.color.array;
 
-        for (let i = 0; i < p.length; i += 3) {       
+        for (let i = 0; i < p.length; i += 3) {
           // https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
           const luminance = (0.2126 * c[i] + 0.7152 * c[i+1] + 0.0722 * c[i+2])
           
@@ -38,7 +38,7 @@ const PointCloud = ({frameIndex, frameCount}) => {
             p[i+2] = v.z;
           }
         }
-
+        
         setGeometry(geometry);
         pointsGeometryCache[frameIndex] = geometry;
       },
