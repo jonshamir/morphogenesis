@@ -9,45 +9,46 @@ import './scene.css';
 const pointsGeometryCache = {}
 const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
 
-const PointCloud = ({frameIndex}) => {
+const PointCloud = ({frameIndex, numFrames}) => {
   const loader = new PLYLoader();
   const [geometry, setGeometry] = useState(null);
   const pointsRef = useRef();
   
   useEffect(() => {
-    if (!pointsGeometryCache[frameIndex]) {
-      loader.load(`/data/119-120_${frameIndex}.ply`, (geometry) => {
-        const points = new THREE.Points(geometry, material);
-        pointsRef.current = points;
-          
-        const positions = geometry.attributes.position.array;
-        const c = geometry.attributes.color.array;
-
-        for (let i = 0; i < positions.length; i += 3) {       
-          // https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
-          const luminance = (0.2126 * c[i] + 0.7152 * c[i+1] + 0.0722 * c[i+2])
-          
-          // Hide points that are too dark or too light
-          if (luminance > 0.6 || luminance < 0.05)
-            positions[i] = positions[i + 1] = positions[i + 2] = 0;
-        }
-
-        setGeometry(geometry);
-        pointsGeometryCache[frameIndex] = geometry;
-      },
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-      },
-      (error) => {
-        console.error('Error loading .ply file:', error);
-      });
-    }
-    else
+    for (let i = 1; i < numFrames; i++)
     {
-      // cache hit
+      if (!pointsGeometryCache[i]) {
+        loader.load(`/data/119-120_${i}.ply`, (geometry) => {
+          console.log(`frame ${i} loaded`);
+    
+          const positions = geometry.attributes.position.array;
+          const c = geometry.attributes.color.array;
+
+          for (let i = 0; i < positions.length; i += 3) {
+            // https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+            const luminance = (0.2126 * c[i] + 0.7152 * c[i+1] + 0.0722 * c[i+2])
+            
+            // Hide points that are too dark or too light
+            if (luminance > 0.5 || luminance < 0.05 || c[i+1] < 0.15)
+              positions[i] = positions[i + 1] = positions[i + 2] = 0;
+          }
+          pointsGeometryCache[i] = geometry;
+          // setGeometry(geometry);
+        },
+        (xhr) => {
+          const progress = xhr.loaded / xhr.total;
+        },
+        (error) => {
+          console.error('Error loading .ply file:', error);
+        });
+      }
+    }
+
+    if (pointsGeometryCache[frameIndex]) {
+      const geometry = pointsGeometryCache[frameIndex];
       const points = new THREE.Points(geometry, material);
       pointsRef.current = points;
-      setGeometry(pointsGeometryCache[frameIndex]);
+      setGeometry(geometry);
     }
   }, [frameIndex]);
 
@@ -70,9 +71,9 @@ const App = () => {
   return (
     <>
       <Canvas camera={{ position: [2, 2, 2] }}>
-        <PointCloud frameIndex={value} />
+        <PointCloud frameIndex={value} numFrames={243} />
         <OrbitControls />
-        <axesHelper />
+        {/* <axesHelper /> */}
         <gridHelper  />
       </Canvas>
       <div className="overlay">
