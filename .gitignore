@@ -6,11 +6,9 @@
 # testing
 /coverage
 
-# production
-/build
-
 # raw data
-/public/data_raw
+/public/data_raw/
+/build/public/data_raw/
 
 # misc
 .DS_Store
