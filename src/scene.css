@@ -15,14 +15,15 @@ body {
   margin: 0;
 }
 
-canvas {
+canvas, #root {
   width: 100vw;
   height: 100vh;
 }
 
 .overlay {
   width: 100vw;
-  height: 60px;
+  box-sizing: border-box;
+  height: 70px;
   position: absolute;
   top: 0;
   color: white;
@@ -30,11 +31,13 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 }
 
 .slider {
   appearance: none;
   width: 90%;
+  margin: 10px;
   height: 10px;
   border-radius: 20px;  
   background: #d3d3d3;

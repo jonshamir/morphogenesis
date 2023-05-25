@@ -9,7 +9,7 @@ import './scene.css';
 const pointsGeometryCache = {}
 const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
 
-const PointCloud = ({frameIndex}) => {
+const PointCloud = ({frameIndex, frameCount}) => {
   const loader = new PLYLoader();
   const [geometry, setGeometry] = useState(null);
   const pointsRef = useRef();
@@ -17,26 +17,33 @@ const PointCloud = ({frameIndex}) => {
   useEffect(() => {
     if (!pointsGeometryCache[frameIndex]) {
       loader.load(`/data/119-120_${frameIndex}.ply`, (geometry) => {
-        const points = new THREE.Points(geometry, material);
-        pointsRef.current = points;
+        console.log(`loaded frame ${frameIndex}`);
+        pointsRef.current = new THREE.Points(geometry, material);
           
-        const positions = geometry.attributes.position.array;
+        const p = geometry.attributes.position.array;
         const c = geometry.attributes.color.array;
 
-        for (let i = 0; i < positions.length; i += 3) {       
+        for (let i = 0; i < p.length; i += 3) {       
           // https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
           const luminance = (0.2126 * c[i] + 0.7152 * c[i+1] + 0.0722 * c[i+2])
           
           // Hide points that are too dark or too light
           if (luminance > 0.6 || luminance < 0.05)
-            positions[i] = positions[i + 1] = positions[i + 2] = 0;
+            p[i] = p[i + 1] = p[i + 2] = 0;
+          else if (frameIndex >= 80) { // Temp fix for rotation in data
+            const v = new Vector3(p[i], p[i+1], p[i+2])
+            v.applyEuler(new THREE.Euler(0, 0.1, 0))
+            p[i] = v.x;
+            p[i+1] = v.y;
+            p[i+2] = v.z;
+          }
         }
 
         setGeometry(geometry);
         pointsGeometryCache[frameIndex] = geometry;
       },
       (xhr) => {
-        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+        const progress = (xhr.loaded / xhr.total);
       },
       (error) => {
         console.error('Error loading .ply file:', error);
@@ -45,8 +52,7 @@ const PointCloud = ({frameIndex}) => {
     else
     {
       // cache hit
-      const points = new THREE.Points(geometry, material);
-      pointsRef.current = points;
+      pointsRef.current = new THREE.Points(geometry, material);
       setGeometry(pointsGeometryCache[frameIndex]);
     }
   }, [frameIndex]);
@@ -61,7 +67,8 @@ const PointCloud = ({frameIndex}) => {
 
 const App = () => {
 
-  const [value, setValue] = useState(50); // Initial value of the slider
+  const frameCount = 243;
+  const [value, setValue] = useState(1); // Initial value of the slider
 
   const handleSliderChange = (event) => {
     setValue(event.target.value);
@@ -70,17 +77,18 @@ const App = () => {
   return (
     <>
       <Canvas camera={{ position: [2, 2, 2] }}>
-        <PointCloud frameIndex={value} />
+        <PointCloud frameIndex={value} frameCount={frameCount} />
         <OrbitControls />
-        <axesHelper />
+        {/* <axesHelper /> */}
         <gridHelper  />
       </Canvas>
       <div className="overlay">
+        <span>{`${value} / ${frameCount}`}</span>
         <input
           className="slider"
           type="range"
           min="1"
-          max="243"
+          max={frameCount}
           value={value}
           onChange={handleSliderChange}
         />
