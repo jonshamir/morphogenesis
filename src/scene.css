@@ -40,7 +40,7 @@ canvas, #root {
 .controls
 {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 10px;
   width: 90%;
 }
@@ -53,17 +53,27 @@ canvas, #root {
 button {
   border-radius: 50px;
   color: #fff;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
   border: 0;
   padding: 0.4em 1em;
   cursor: pointer;
+  transition: background-color .2s;
+}
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+button.material-icons
+{
+  padding: 0.2em;
 }
 
 .slider {
   appearance: none;
   width: 90%;
-  margin: 13px;
-  height: 10px;
+  margin-top: 15px;
+  height: 6px;
   border-radius: 25px;  
   background: #cccccc;
   outline: none;
@@ -79,8 +89,8 @@ button {
 
 .slider::-webkit-slider-thumb {
   appearance: none;
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%; 
   background: #fff;
   cursor: pointer;
@@ -92,4 +102,18 @@ button {
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
+}
+
+.loader
+{
+  animation: rotating 1.5s linear infinite;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
 }

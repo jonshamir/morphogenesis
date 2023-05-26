@@ -10,7 +10,7 @@ const pointsGeometryCache = {}
 let filesLoaded = 0;
 const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
 
-const PointCloud = ({frameIndex, frameCount}) => {
+const PointCloud = ({ frameIndex, frameCount, setLoadProgress }) => {
   const loader = new PLYLoader();
   const [geometry, setGeometry] = useState(null);
   const pointsRef = useRef();
@@ -22,6 +22,7 @@ const PointCloud = ({frameIndex, frameCount}) => {
       if (!pointsGeometryCache[i]) {
         loader.load(`/data/119-120_${i}.ply`, (geometry) => {
           filesLoaded++;
+          setLoadProgress(filesLoaded / frameCount);
           console.log(`loading ${((filesLoaded / frameCount)*100).toFixed(2)}%`);
             
           const p = geometry.attributes.position.array;
@@ -34,17 +35,8 @@ const PointCloud = ({frameIndex, frameCount}) => {
             // Hide points that are too dark or too light
             if (luminance > 0.6 || luminance < 0.05)
               p[i] = p[i + 1] = p[i + 2] = 0;
-            else if (i >= 80) { // Temp fix for rotation in data
-              const v = new Vector3(p[i], p[i+1], p[i+2])
-              v.applyEuler(new THREE.Euler(0, 0.1, 0))
-              p[i] = v.x;
-              p[i+1] = v.y;
-              p[i+2] = v.z;
-            }
           }
-
           pointsGeometryCache[i] = geometry;
-
         },
         (xhr) => {
           const progress = (xhr.loaded / xhr.total);
@@ -59,6 +51,15 @@ const PointCloud = ({frameIndex, frameCount}) => {
   // Show frames
   useEffect(() => {
     if (pointsGeometryCache[frameIndex]) {
+      // Temp fix for rotation in data
+      if (frameIndex >= 80) { 
+        const p = pointsGeometryCache[frameIndex].attributes.position.array;
+        const v = new Vector3(p[frameIndex], p[frameIndex+1], p[frameIndex+2])
+        v.applyEuler(new THREE.Euler(0, 0.1, 0))
+        p[frameIndex] = v.x;
+        p[frameIndex+1] = v.y;
+        p[frameIndex+2] = v.z;
+      }
       setGeometry(pointsGeometryCache[frameIndex]);
       pointsRef.current = new THREE.Points(geometry, material);
     }
@@ -73,39 +74,47 @@ const PointCloud = ({frameIndex, frameCount}) => {
   );
 };
 
+const Controls = () => {
+
+}
+
 
 const App = () => {
-
-  const frameCount = 50;
-  const [value, setValue] = useState(1); // Initial value of the slider
-  const [isPlaying, setIsPlaying] = useState(false); // Initial value of the slider
+  const frameCount = 243;
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [currFrame, setCurrFrame] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playSpeed, setPlaySpeed] = useState(1); 
 
   const handleSliderChange = (event) => {
-    setValue(event.target.value);
+    setCurrFrame(event.target.value);
   };
 
   return (
     <>
       <Canvas camera={{ position: [2, 2, 2] }}>
-        <PointCloud frameIndex={value} frameCount={frameCount} />
+        <PointCloud frameIndex={currFrame} frameCount={frameCount} setLoadProgress={setLoadProgress} />
         <OrbitControls />
-        {/* <axesHelper /> */}
         <gridHelper  />
       </Canvas>
       <div className="overlay">
         <div className="controls">
-          <button onClick={()=> setIsPlaying(!isPlaying)}>
-            {isPlaying ? 'pause' : 'play'}
+          <button className="material-icons" onClick={()=> setIsPlaying(!isPlaying)}>
+              {isPlaying ? 'pause' : 'play_arrow'}
           </button>
+          <button onClick={()=> setPlaySpeed(playSpeed > 8 ? 1 : 2*playSpeed)}>
+            {playSpeed}x
+          </button>
+          {loadProgress < 0.98 && <span className="material-icons loader">sync</span>}
           <div className="fillSpace"></div>
-          <span>{`${value} / ${frameCount}`}</span>
+          <span>{`${currFrame} / ${frameCount}`}</span>
         </div>
         <input
           className="slider"
           type="range"
           min="1"
           max={frameCount}
-          value={value}
+          value={currFrame}
           onChange={handleSliderChange}
         />
       </div>
