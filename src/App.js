@@ -105,7 +105,10 @@ const App = () => {
           <button onClick={()=> setPlaySpeed(playSpeed > 8 ? 1 : 2*playSpeed)}>
             {playSpeed}x
           </button>
-          {loadProgress < 0.98 && <span className="material-icons loader">sync</span>}
+          {loadProgress < 0.98 && <span>
+            <span className="material-icons loader">sync</span>
+            { (loadProgress*100).toFixed(0)}%
+            </span>}
           <div className="fillSpace"></div>
           <span>{`${currFrame} / ${frameCount}`}</span>
         </div>
