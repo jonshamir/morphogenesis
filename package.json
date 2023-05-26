@@ -15,6 +15,7 @@
   "name": "nb886i",
   "description": null,
   "version": "0.0.0",
+  "homepage": "morphogenesis",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
