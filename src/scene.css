@@ -37,6 +37,28 @@ canvas, #root {
   flex-direction: column;
 }
 
+.controls
+{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 90%;
+}
+
+.fillSpace
+{
+  flex-grow: 1;
+}
+
+button {
+  border-radius: 50px;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 0;
+  padding: 0.4em 1em;
+  cursor: pointer;
+}
+
 .slider {
   appearance: none;
   width: 90%;
