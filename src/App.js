@@ -6,27 +6,33 @@ import * as THREE from "three";
 import { Vector3, Matrix4 } from "three";
 import './scene.css';
 
-const pointsGeometryCache = {}
-let filesLoaded = 0;
 const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
 
-const PointCloud = ({ frameIndex, frameCount, setLoadProgress }) => {
+const PointCloud = ({ currFrame, setCurrFrame, frameCount, setLoadProgress, isPlaying }) => {
   const loader = new PLYLoader();
   const [geometry, setGeometry] = useState(null);
   const pointsRef = useRef();
+  const geometryCacheRef = useRef({});
+  const filesLoadedRef = useRef(0);
   
+  useFrame((_, delta) => {
+    if (isPlaying)
+    {
+      setCurrFrame((currFrame + 1) % frameCount);
+    }
+  });
+
   // Load frames
   useEffect(() => {
     for (let i = 1; i < frameCount + 1; i++)
     {
-      if (!pointsGeometryCache[i]) {
-        loader.load(`/data/119-120_${i}.ply`, (geometry) => {
-          filesLoaded++;
-          setLoadProgress(filesLoaded / frameCount);
-          console.log(`loading ${((filesLoaded / frameCount)*100).toFixed(2)}%`);
+      if (!geometryCacheRef.current[i]) {
+        loader.load(`/data/119-120_${i}.ply`, (g) => {
+          filesLoadedRef.current++;
+          setLoadProgress(filesLoadedRef.current / frameCount);
             
-          const p = geometry.attributes.position.array;
-          const c = geometry.attributes.color.array;
+          const p = g.attributes.position.array;
+          const c = g.attributes.color.array;
 
           for (let i = 0; i < p.length; i += 3) {
             // https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
@@ -36,36 +42,32 @@ const PointCloud = ({ frameIndex, frameCount, setLoadProgress }) => {
             if (luminance > 0.6 || luminance < 0.05)
               p[i] = p[i + 1] = p[i + 2] = 0;
           }
-          pointsGeometryCache[i] = geometry;
+          geometryCacheRef.current[i] = g;
         },
-        (xhr) => {
-          const progress = (xhr.loaded / xhr.total);
-        },
-        (error) => {
-          console.error('Error loading .ply file:', error);
-        });
+        () => {}, // loading
+        error =>  console.error('Error loading .ply file:', error));
       }
     }
   }, []);
 
   // Show frames
   useEffect(() => {
-    if (pointsGeometryCache[frameIndex]) {
+    if (geometryCacheRef.current[currFrame]) {
       // Temp fix for rotation in data
-      if (frameIndex >= 80) { 
-        const p = pointsGeometryCache[frameIndex].attributes.position.array;
-        const v = new Vector3(p[frameIndex], p[frameIndex+1], p[frameIndex+2])
-        v.applyEuler(new THREE.Euler(0, 0.1, 0))
-        p[frameIndex] = v.x;
-        p[frameIndex+1] = v.y;
-        p[frameIndex+2] = v.z;
+      if (currFrame >= 80) { 
+        const p = geometryCacheRef.current[currFrame].attributes.position.array;
+        const v = new Vector3(p[currFrame], p[currFrame+1], p[currFrame+2])
+        v.applyEuler(new THREE.Euler(0, 0.5, 0))
+        p[currFrame] = v.x;
+        p[currFrame+1] = v.y;
+        p[currFrame+2] = v.z;
       }
-      setGeometry(pointsGeometryCache[frameIndex]);
+      setGeometry(geometryCacheRef.current[currFrame]);
       pointsRef.current = new THREE.Points(geometry, material);
     }
     else
       setGeometry(undefined);
-  }, [frameIndex]);
+  }, [currFrame]);
 
   return (
     <points>
@@ -93,7 +95,12 @@ const App = () => {
   return (
     <>
       <Canvas camera={{ position: [2, 2, 2] }}>
-        <PointCloud frameIndex={currFrame} frameCount={frameCount} setLoadProgress={setLoadProgress} />
+        <PointCloud
+        currFrame={currFrame}
+        setCurrFrame={setCurrFrame}
+        frameCount={frameCount}
+        setLoadProgress={setLoadProgress}
+        isPlaying={isPlaying} />
         <OrbitControls />
         <gridHelper  />
       </Canvas>
