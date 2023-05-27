@@ -54,7 +54,7 @@ const PointCloud = ({
       for (let i = 1; i < frameCount + 1; i++) {
         if (!geometryCacheRef.current[i]) {
           loader.load(
-            `/data/119-120_${i}.ply`,
+            `data/119-120_${i}.ply`,
             (g) => {
               filesLoadedRef.current++;
               onProgressChanged(filesLoadedRef.current / frameCount);
@@ -78,7 +78,7 @@ const PointCloud = ({
     } else {
       console.error(`Missing frame ${currFrame}`);
       setPoints(undefined);
-      new PLYLoader().load(`/data/119-120_${currFrame}.ply`, (g) => {
+      new PLYLoader().load(`data/119-120_${currFrame}.ply`, (g) => {
         geometryCacheRef.current[currFrame] = processGeometry(g, currFrame);
         setPoints(
           new THREE.Points(geometryCacheRef.current[currFrame], material)

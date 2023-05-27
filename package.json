@@ -12,7 +12,8 @@
   "devDependencies": {
     "react-scripts": "^5.0.0"
   },
-  "name": "nb886i",
+  "name": "morphogenesis",
+  "homepage": "morphogenesis",
   "description": null,
   "version": "0.0.0",
   "scripts": {
