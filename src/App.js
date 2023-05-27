@@ -7,11 +7,8 @@ import "./scene.css";
 import disc from "./public/dics.png";
 import { useCallback } from "react";
 
-const discSprite = new THREE.TextureLoader().load(disc, (d) => {
-  console.log(d);
-});
+const discSprite = new THREE.TextureLoader().load(disc);
 
-// discSprite.colorSpace = THREE.SRGBColorSpace;
 const material = new THREE.PointsMaterial({
   size: 0.024,
   vertexColors: true,
@@ -46,6 +43,9 @@ const processGeometry = (g, frameIndex) => {
   return g;
 };
 
+let timer = 0;
+const frameTime = 1 / 30;
+
 const PointCloud = ({
   currFrame,
   setCurrFrame,
@@ -59,13 +59,21 @@ const PointCloud = ({
   const filesLoadedRef = useRef(0);
 
   useFrame((_, delta) => {
-    if (isPlaying) setCurrFrame(1 + ((currFrame + 1) % frameCount));
+    if (isPlaying) {
+      timer += delta * playSpeed;
+      let deltaFrames = 0;
+      while (timer > frameTime) {
+        timer -= frameTime;
+        deltaFrames++;
+      }
+      setCurrFrame((currFrame + deltaFrames) % frameCount);
+    }
   });
 
   // Load frames
   useEffect(() => {
     (async () => {
-      for (let i = 1; i < frameCount + 1; i++) {
+      for (let i = 0; i < frameCount; i++) {
         if (!geometryCacheRef.current[i]) {
           loader.load(
             `data/119-120_${i}.ply`,
@@ -110,7 +118,7 @@ const PointCloud = ({
 const Controls = () => {};
 
 const App = () => {
-  const frameCount = 243;
+  const frameCount = 244;
   const [loadProgress, setLoadProgress] = useState(0);
   const [currFrame, setCurrFrame] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
