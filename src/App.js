@@ -4,9 +4,21 @@ import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
 import { useMemo, useState, useRef, useEffect } from "react";
 import * as THREE from "three";
 import "./scene.css";
+import disc from "./public/dics.png";
 import { useCallback } from "react";
 
-const material = new THREE.PointsMaterial({ size: 0.013, vertexColors: true });
+const discSprite = new THREE.TextureLoader().load(disc, (d) => {
+  console.log(d);
+});
+
+// discSprite.colorSpace = THREE.SRGBColorSpace;
+const material = new THREE.PointsMaterial({
+  size: 0.024,
+  vertexColors: true,
+  map: discSprite,
+  alphaTest: 0.75,
+  transparent: true,
+});
 
 const loader = new PLYLoader();
 
@@ -19,7 +31,8 @@ const processGeometry = (g, frameIndex) => {
     const luminance = 0.2126 * c[i] + 0.7152 * c[i + 1] + 0.0722 * c[i + 2];
 
     // Hide points that are too dark or too light
-    if (luminance > 0.6 || luminance < 0.05) p[i] = p[i + 1] = p[i + 2] = 0;
+    if (luminance > 0.6 || luminance < 0.05 || p[i + 1] < 0)
+      p[i] = p[i + 1] = p[i + 2] = 0;
     else if (frameIndex >= 80) {
       // Temp fix for rotation in data
       const v = new THREE.Vector3(p[i], p[i + 1], p[i + 2]);
@@ -39,6 +52,7 @@ const PointCloud = ({
   frameCount,
   onProgressChanged,
   isPlaying,
+  playSpeed,
 }) => {
   const [points, setPoints] = useState(null);
   const geometryCacheRef = useRef({});
@@ -100,6 +114,7 @@ const App = () => {
   const [playSpeed, setPlaySpeed] = useState(1);
 
   const handleSliderChange = (event) => {
+    setIsPlaying(false);
     setCurrFrame(event.target.value);
   };
 
@@ -117,6 +132,7 @@ const App = () => {
           frameCount={frameCount}
           onProgressChanged={handleProgressChange}
           isPlaying={isPlaying}
+          playSpeed={playSpeed}
         />
         <OrbitControls />
         <gridHelper />

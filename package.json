@@ -13,7 +13,6 @@
     "react-scripts": "^5.0.0"
   },
   "name": "morphogenesis",
-  "homepage": "morphogenesis",
   "description": null,
   "version": "0.0.0",
   "scripts": {
