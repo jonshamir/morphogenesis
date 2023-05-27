@@ -15,9 +15,9 @@ const discSprite = new THREE.TextureLoader().load(disc, (d) => {
 const material = new THREE.PointsMaterial({
   size: 0.024,
   vertexColors: true,
-  map: discSprite,
-  alphaTest: 0.75,
-  transparent: true,
+  // map: discSprite,
+  // alphaTest: 0.75,
+  // transparent: true,
 });
 
 const loader = new PLYLoader();
@@ -73,6 +73,15 @@ const PointCloud = ({
               filesLoadedRef.current++;
               onProgressChanged(filesLoadedRef.current / frameCount);
               geometryCacheRef.current[i] = processGeometry(g, i);
+
+              if (i == currFrame) {
+                setPoints(
+                  new THREE.Points(
+                    geometryCacheRef.current[currFrame],
+                    material
+                  )
+                );
+              }
             },
             () => {},
             (e) => console.error(e)
@@ -92,12 +101,6 @@ const PointCloud = ({
     } else {
       console.error(`Missing frame ${currFrame}`);
       setPoints(undefined);
-      new PLYLoader().load(`data/119-120_${currFrame}.ply`, (g) => {
-        geometryCacheRef.current[currFrame] = processGeometry(g, currFrame);
-        setPoints(
-          new THREE.Points(geometryCacheRef.current[currFrame], material)
-        );
-      });
     }
   }, [currFrame]);
 
