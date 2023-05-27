@@ -7,8 +7,7 @@
 /coverage
 
 # raw data
-/public/data_raw/
-/build/public/data_raw/
+/data
 
 # misc
 .DS_Store
