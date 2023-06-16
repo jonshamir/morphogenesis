@@ -19,7 +19,7 @@ const material = new THREE.PointsMaterial({
 
 const loader = new PLYLoader();
 
-const processGeometry = (g, frameIndex) => {
+const processSproutGeometry = (g, frameIndex) => {
   const p = g.attributes.position.array;
   const c = g.attributes.color.array;
 
@@ -38,6 +38,27 @@ const processGeometry = (g, frameIndex) => {
       p[i + 1] = v.y;
       p[i + 2] = v.z;
     }
+  }
+
+  return g;
+};
+
+const processFlowerGeometry = (g, frameIndex) => {
+  const p = g.attributes.position.array;
+  const c = g.attributes.color.array;
+  const scale = 0.25;
+
+  for (let i = 0; i < p.length; i += 3) {
+    const luminance = 0.2126 * c[i] + 0.7152 * c[i + 1] + 0.0722 * c[i + 2];
+
+    // Temp fix for rotation in data
+    const v = new THREE.Vector3(p[i], p[i + 1], p[i + 2]);
+    // p[i] = (p[i] + 40) * scale;
+    // p[i + 1] = (p[i + 1] + 20) * scale;
+    // p[i + 2] = (p[i + 2] + 10) * scale;
+
+    // Hide points that are too dark
+    if (luminance < 0.03) p[i] = p[i + 1] = p[i + 2] = 0;
   }
 
   return g;
@@ -76,11 +97,11 @@ const PointCloud = ({
       for (let i = 0; i < frameCount; i++) {
         if (!geometryCacheRef.current[i]) {
           loader.load(
-            `data/119-120_${i}.ply`,
+            `data/flower/monst_${i}.ply`,
             (g) => {
               filesLoadedRef.current++;
               onProgressChanged(filesLoadedRef.current / frameCount);
-              geometryCacheRef.current[i] = processGeometry(g, i);
+              geometryCacheRef.current[i] = processFlowerGeometry(g, i);
 
               if (i == currFrame) {
                 setPoints(
@@ -118,7 +139,7 @@ const PointCloud = ({
 const Controls = () => {};
 
 const App = () => {
-  const frameCount = 244;
+  const frameCount = 353;
   const [loadProgress, setLoadProgress] = useState(0);
   const [currFrame, setCurrFrame] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
